@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTM Query Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        input, button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>UTM Query API</h1>
+        <input type="text" id="urlInput" placeholder="Enter URL with UTM parameter">
+        <button id="fetchButton">Fetch and Query</button>
+        <div id="response" style="margin-top: 20px; font-weight: bold;"></div>
+    </div>
+    <script>
+        async function query(data) {
+            const response = await fetch(
+                "https://api-inference.huggingface.co/models/google-bert/bert-large-uncased-whole-word-masking-finetuned-squad",
+                {
+                    headers: {
+                        Authorization: "Bearer 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",
+                        "Content-Type": "application/json",
+                    },
+                    method: "POST",
+                    body: JSON.stringify(data),
+                }
+            );
+            return response.json();
+        }
+
+        async function fetchContext() {
+            const response = await fetch("https://datasets-server.huggingface.co/first-rows?dataset=karan6001%2FConversions&config=default&split=train");
+            const data = await response.json();
+            return data;
+        }
+
+        document.getElementById("fetchButton").addEventListener("click", async () => {
+            const url = document.getElementById("urlInput").value;
+            const urlParams = new URL(url).searchParams;
+            const utmParam = urlParams.get("utm");
+
+            if (!utmParam) {
+                document.getElementById("response").innerText = "No UTM parameter found in the URL.";
+                return;
+            }
+
+            // Fetch context dynamically
+            const contextData = await fetchContext();
+            const context = contexData;
+            const question = `Is the UTM parameter "${utmParam}" the top performing count of conversions?`;
+
+            const apiResponse = await query({
+                inputs: { question, context }
+            });
+
+            const answer = apiResponse?.answer || "No response";
+
+            document.getElementById("response").innerText = `API Response: ${answer}`;
+
+            if (answer.toLowerCase().includes("yes")) {
+                alert("Additional discount if you buy now!");
+            }
+        });
+    </script>
+</body>
+</html>
