@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UTM Source Query</title>
+    <title>Custom Question with Dataset</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,22 +14,29 @@
             margin: auto;
             text-align: center;
         }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
+        textarea, input, button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            width: 100%;
+        }
+        textarea {
+            height: 100px;
         }
         #response {
             margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
             font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>UTM Source Query</h1>
-        <button id="fetchButton">Process UTM Query</button>
+        <h1>Ask a Question with Social Media Dataset</h1>
+        <textarea id="questionInput" placeholder="Enter your question here"></textarea>
+        <button id="submitButton">Submit Question</button>
         <div id="response"></div>
     </div>
     <script>
@@ -49,45 +56,36 @@
         }
 
         async function fetchContext() {
-            const response = await fetch("https://datasets-server.huggingface.co/first-rows?dataset=karan6001%2FConversions&config=default&split=train");
+            const response = await fetch("https://datasets-server.huggingface.co/rows?dataset=karan6001%2Fsocial_media&config=default&split=train&offset=0&length=100");
             if (!response.ok) {
                 throw new Error("Failed to fetch context data");
             }
             const data = await response.json();
-            // Extract relevant context, update based on the actual response structure
-            return JSON.stringify(data); // Adjust as needed for actual dataset structure
+            // Process and return the relevant context (adjust as per actual structure)
+            return JSON.stringify(data); // Adjust this based on your dataset's actual structure
         }
 
-        document.getElementById("fetchButton").addEventListener("click", async () => {
+        document.getElementById("submitButton").addEventListener("click", async () => {
             try {
-                // Get the current URL
-                const url = window.location.href;
-
-                // Extract utm_source parameter
-                const urlParams = new URL(url).searchParams;
-                const utmSource = urlParams.get("utm_source");
-
-                if (!utmSource) {
-                    document.getElementById("response").innerText = "No utm_source parameter found in the URL.";
+                // Fetch the user's question
+                const question = document.getElementById("questionInput").value.trim();
+                if (!question) {
+                    document.getElementById("response").innerText = "Please enter a question.";
                     return;
                 }
 
-                // Fetch context dynamically
+                // Fetch the dataset context
                 const context = await fetchContext();
 
-                const question = `reply in yes / no - Is the source "${utmSource}" the top performing count of conversions?`;
-
+                // Send the question and context to the API
                 const apiResponse = await query({
                     inputs: { question, context }
                 });
 
                 const answer = apiResponse?.answer || "No response";
 
-                document.getElementById("response").innerText = `API Response: ${answer}`;
-
-                if (answer.toLowerCase().includes("yes")) {
-                    alert("Additional discount if you buy now!");
-                }
+                // Display the response
+                document.getElementById("response").innerText = `Answer: ${answer}`;
             } catch (error) {
                 document.getElementById("response").innerText = `Error: ${error.message}`;
             }
