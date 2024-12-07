@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UTM Query Website</title>
+    <title>UTM Source Query</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,21 +12,25 @@
         .container {
             max-width: 600px;
             margin: auto;
+            text-align: center;
         }
-        input, button {
-            display: block;
-            margin: 10px 0;
-            padding: 10px;
-            width: 100%;
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #response {
+            margin-top: 20px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>UTM Query API</h1>
-        <input type="text" id="urlInput" placeholder="Enter URL with UTM parameter">
-        <button id="fetchButton">Fetch and Query</button>
-        <div id="response" style="margin-top: 20px; font-weight: bold;"></div>
+        <h1>UTM Source Query</h1>
+        <button id="fetchButton">Process UTM Query</button>
+        <div id="response"></div>
     </div>
     <script>
         async function query(data) {
@@ -46,35 +50,46 @@
 
         async function fetchContext() {
             const response = await fetch("https://datasets-server.huggingface.co/first-rows?dataset=karan6001%2FConversions&config=default&split=train");
+            if (!response.ok) {
+                throw new Error("Failed to fetch context data");
+            }
             const data = await response.json();
-            return data;
+            // Extract relevant context, update based on the actual response structure
+            return JSON.stringify(data); // Adjust as needed for actual dataset structure
         }
 
         document.getElementById("fetchButton").addEventListener("click", async () => {
-            const url = document.getElementById("urlInput").value;
-            const urlParams = new URL(url).searchParams;
-            const utmParam = urlParams.get("utm");
+            try {
+                // Get the current URL
+                const url = window.location.href;
 
-            if (!utmParam) {
-                document.getElementById("response").innerText = "No UTM parameter found in the URL.";
-                return;
-            }
+                // Extract utm_source parameter
+                const urlParams = new URL(url).searchParams;
+                const utmSource = urlParams.get("utm_source");
 
-            // Fetch context dynamically
-            const contextData = await fetchContext();
-            const context = contexData;
-            const question = `Is the UTM parameter "${utmParam}" the top performing count of conversions?`;
+                if (!utmSource) {
+                    document.getElementById("response").innerText = "No utm_source parameter found in the URL.";
+                    return;
+                }
 
-            const apiResponse = await query({
-                inputs: { question, context }
-            });
+                // Fetch context dynamically
+                const context = await fetchContext();
 
-            const answer = apiResponse?.answer || "No response";
+                const question = `Is the UTM source "${utmSource}" the top performing count of conversions?`;
 
-            document.getElementById("response").innerText = `API Response: ${answer}`;
+                const apiResponse = await query({
+                    inputs: { question, context }
+                });
 
-            if (answer.toLowerCase().includes("yes")) {
-                alert("Additional discount if you buy now!");
+                const answer = apiResponse?.answer || "No response";
+
+                document.getElementById("response").innerText = `API Response: ${answer}`;
+
+                if (answer.toLowerCase().includes("yes")) {
+                    alert("Additional discount if you buy now!");
+                }
+            } catch (error) {
+                document.getElementById("response").innerText = `Error: ${error.message}`;
             }
         });
     </script>
