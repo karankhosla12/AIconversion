@@ -75,7 +75,7 @@
                 // Fetch context dynamically
                 const context = await fetchContext();
 
-                const question = `Is the source "${utmSource}" the top performing count of conversions?`;
+                const question = `reply in yes / no - Is the source "${utmSource}" the top performing count of conversions?`;
 
                 const apiResponse = await query({
                     inputs: { question, context }
