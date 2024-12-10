@@ -1,54 +1,155 @@
-<script>
-    async function submitFeedback() {
-        const name = document.getElementById('name').value;
-        const team = document.getElementById('team').value;
-        const rating = document.getElementById('rating').value;
-        const notes = document.getElementById('notes').value;
-
-        if (!name || !team || !rating) {
-            alert('Please fill out all required fields.');
-            return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
         }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output-box {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px dashed #ccc;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .copy-button {
+            margin-top: 10px;
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .copy-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Feedback Form</h1>
+        <form id="feedbackForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
 
-        const context = `Feedback for Karan:\n\nName of the person providing feedback: ${name}\nTeam of the person providing feedback: ${team}\nRating provided (out of 5): ${rating}\n\nKaran is a technical integrations consultant. He is responsible for ensuring seamless integration of systems and resolving technical issues efficiently.\n\nNotes provided by the feedback giver: ${notes || 'No additional notes provided.'}`;
+            <label for="team">Team:</label>
+            <input type="text" id="team" name="team" required>
 
-        const data = {
-            inputs: `Can you write a professional feedback for Karan based on the following details? ${context}`
-        };
+            <label for="rating">Has Karan helped you? Please rate (3-5):</label>
+            <select id="rating" name="rating" required>
+                <option value="">-- Select a Rating --</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
 
-        try {
-            const output = await query(data);
-            const outputBox = document.getElementById('output');
-            if (output && output.generated_text) {
-                outputBox.innerHTML = `<strong>Generated Feedback:</strong> <br> ${output.generated_text}`;
-            } else {
-                outputBox.innerHTML = "Unable to generate feedback.";
+            <label for="notes">Additional Notes:</label>
+            <textarea id="notes" name="notes" rows="4"></textarea>
+
+            <button type="button" onclick="submitFeedback()">Submit</button>
+        </form>
+
+        <div id="output" class="output-box"></div>
+        <button class="copy-button" onclick="copyToClipboard()">Copy Output to Clipboard</button>
+    </div>
+
+    <script>
+        async function submitFeedback() {
+            const name = document.getElementById('name').value;
+            const team = document.getElementById('team').value;
+            const rating = document.getElementById('rating').value;
+            const notes = document.getElementById('notes').value;
+
+            if (!name || !team || !rating) {
+                alert('Please fill out all required fields.');
+                return;
             }
-        } catch (error) {
-            console.error("Error generating feedback:", error);
-            document.getElementById('output').innerHTML = "An error occurred while generating feedback.";
+
+            const context = `Feedback for Karan:\n\nName of the person providing feedback: ${name}\nTeam of the person providing feedback: ${team}\nRating provided (out of 5): ${rating}\n\nKaran is a technical integrations consultant. He is responsible for ensuring seamless integration of systems and resolving technical issues efficiently.\n\nNotes provided by the feedback giver: ${notes || 'No additional notes provided.'}`;
+
+            const data = {
+                inputs: `Can you write a professional feedback for Karan based on the following details? ${context}`
+            };
+
+            const output = query(data);
+            const outputBox = document.getElementById('output');
+            outputBox.innerHTML = `<strong>Generated Feedback:</strong> <br> ${output?.inputs || "Unable to generate feedback."}`;
         }
-    }
 
-    function copyToClipboard() {
-        const outputBox = document.getElementById('output');
-        const text = outputBox.textContent || outputBox.innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Output copied to clipboard!');
-        }).catch(err => {
-            alert('Failed to copy output to clipboard.');
-        });
-    }
+        function copyToClipboard() {
+            const outputBox = document.getElementById('output');
+            const text = outputBox.textContent || outputBox.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Output copied to clipboard!');
+            }).catch(err => {
+                alert('Failed to copy output to clipboard.');
+            });
+        }
 
-    async function query(payload) {
-        const API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large";
-        const headers = { "Authorization": "Bearer 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" };
+        function query(payload) {
+            const API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large";
+            const headers = { "Authorization": "Bearer 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" };
 
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify(payload)
-        });
-        return response.json();
-    }
-</script>
+            return fetch(API_URL, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => data)
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>
