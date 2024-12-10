@@ -7,104 +7,82 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            background-color: #f0f4f8;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f4f4f9;
+            margin: 0;
         }
+
         .container {
-            background: white;
+            background-color: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
+            max-width: 400px;
         }
+
         h1 {
             text-align: center;
-            color: #333;
+            margin-bottom: 20px;
         }
+
         label {
             display: block;
             margin-top: 10px;
-            font-weight: bold;
         }
+
         input, select, textarea {
             width: 100%;
-            padding: 10px;
-            margin-top: 5px;
+            padding: 8px;
+            margin-bottom: 10px;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
+
         button {
             width: 100%;
-            background-color: #007bff;
-            color: white;
             padding: 10px;
+            background-color: #4CAF50;
+            color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
-            margin-top: 15px;
             font-size: 16px;
         }
+
         button:hover {
-            background-color: #0056b3;
+            background-color: #45a049;
         }
+
         .output-box {
             margin-top: 20px;
             padding: 10px;
-            border: 1px dashed #ccc;
-            background-color: #f9f9f9;
-            border-radius: 5px;
+            background-color: #e8f5e9;
+            border: 1px solid #4CAF50;
+            border-radius: 4px;
+            word-wrap: break-word;
+            max-height: 200px;
+            overflow-y: auto;
         }
-        .copy-button {
+
+        #copyButton {
+            width: 100%;
+            padding: 10px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
             margin-top: 10px;
-            background-color: #28a745;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
             font-size: 16px;
         }
-        .copy-button:hover {
-            background-color: #218838;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .modal-content p {
-            margin-bottom: 20px;
-        }
-        .close-button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .close-button:hover {
-            background-color: #0056b3;
+
+        #copyButton:hover {
+            background-color: #0b7dda;
         }
     </style>
 </head>
@@ -118,95 +96,70 @@
             <label for="team">Team:</label>
             <input type="text" id="team" name="team" required>
 
-            <label for="rating">Has Karan helped you? Please rate (3-5):</label>
+            <label for="rating">Has Karan helped you? Please rate from 3-5:</label>
             <select id="rating" name="rating" required>
-                <option value="">-- Select a Rating --</option>
                 <option value="3">3</option>
                 <option value="4">4</option>
                 <option value="5">5</option>
             </select>
 
             <label for="notes">Additional Notes:</label>
-            <textarea id="notes" name="notes" rows="4"></textarea>
+            <textarea id="notes" name="notes"></textarea>
 
-            <button type="button" onclick="generatePrompt()">Submit</button>
+            <button type="submit">Submit</button>
         </form>
 
-        <div id="output" class="output-box">Copy and Paste Prompt</div>
-        <button class="copy-button" onclick="copyToClipboard()">&#x2398; Copy Prompt</button>
-    </div>
-
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <p>Please paste the copied prompt into the text box in the application below:</p>
-            <iframe
-                src="https://chatgpt.com/"
-                frameborder="0"
-                width="850"
-                height="450"
-            ></iframe>
-            <button class="close-button" onclick="closeModal()">Close</button>
-        </div>
+        <div id="outputBox" class="output-box"></div>
+        <button id="copyButton">Copy to Clipboard</button>
     </div>
 
     <script>
-        function getUrlParameter(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
-        }
+        document.getElementById('feedbackForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
 
-        function populateFields() {
-            const name = getUrlParameter('utm_name');
-            const team = getUrlParameter('utm_team');
-
-            if (name) {
-                document.getElementById('name').value = name;
-            }
-
-            if (team) {
-                document.getElementById('team').value = team;
-            }
-        }
-
-        function generatePrompt() {
             const name = document.getElementById('name').value;
             const team = document.getElementById('team').value;
             const rating = document.getElementById('rating').value;
             const notes = document.getElementById('notes').value;
 
-            if (!name || !team || !rating) {
-                alert('Please fill out all required fields.');
-                return;
+            // Construct the prompt
+            const prompt = `Name: ${name}\nTeam: ${team}\nRating: ${rating}\nNotes: ${notes}\n\nTell me a joke about Cloudflare`;
+
+            // Prepare the payload
+            const payload = {
+                prompt: prompt
+            };
+
+            try {
+                const response = await fetch('https://chat-gpt-api.karankhosla99.workers.dev/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                const outputBox = document.getElementById('outputBox');
+
+                // Display the raw output in the output box
+                outputBox.textContent = data.result || 'No response received';
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('There was an error processing your request. Please try again later.');
             }
+        });
 
-            const prompt = `Feedback for Karan:\n\nName: ${name}\nTeam: ${team}\nRating: ${rating}\nNotes: ${notes || 'No additional notes provided.'}`;
-
-            const outputBox = document.getElementById('output');
-            outputBox.textContent = prompt;
-        }
-
-        function copyToClipboard() {
-            const outputBox = document.getElementById('output');
-            const text = outputBox.textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                openModal();
+        // Copy to clipboard functionality
+        document.getElementById('copyButton').addEventListener('click', function() {
+            const outputBox = document.getElementById('outputBox');
+            navigator.clipboard.writeText(outputBox.textContent).then(() => {
+                alert('Copied to clipboard!');
             }).catch(err => {
-                alert('Failed to copy output to clipboard.');
+                console.error('Failed to copy text:', err);
             });
-        }
-
-        function openModal() {
-            const modal = document.getElementById('modal');
-            modal.style.display = 'flex';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('modal');
-            modal.style.display = 'none';
-        }
-
-        // Populate fields on page load
-        document.addEventListener('DOMContentLoaded', populateFields);
+        });
     </script>
 </body>
 </html>
