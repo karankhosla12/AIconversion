@@ -139,13 +139,35 @@
     <div id="modal" class="modal">
         <div class="modal-content">
             <p>Please paste the copied prompt into the text box in the application below:</p>
-            <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/4.44.0/gradio.js"></script>
-            <gradio-app src="https://yuntian-deng-chatgpt4.hf.space"></gradio-app>
+            <iframe
+                src="https://yuntian-deng-chatgpt4turbo.hf.space"
+                frameborder="0"
+                width="850"
+                height="450"
+            ></iframe>
             <button class="close-button" onclick="closeModal()">Close</button>
         </div>
     </div>
 
     <script>
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function populateFields() {
+            const name = getUrlParameter('utm_name');
+            const team = getUrlParameter('utm_team');
+
+            if (name) {
+                document.getElementById('name').value = name;
+            }
+
+            if (team) {
+                document.getElementById('team').value = team;
+            }
+        }
+
         function generatePrompt() {
             const name = document.getElementById('name').value;
             const team = document.getElementById('team').value;
@@ -157,7 +179,7 @@
                 return;
             }
 
-            const prompt = `Feedback for Karan who works as a technical integrations consultant :\n\nName: ${name}\nTeam: ${team}\nRating: ${rating}\nNotes: ${notes || 'No additional notes provided.'}`;
+            const prompt = `Feedback for Karan:\n\nName: ${name}\nTeam: ${team}\nRating: ${rating}\nNotes: ${notes || 'No additional notes provided.'}`;
 
             const outputBox = document.getElementById('output');
             outputBox.textContent = prompt;
@@ -182,6 +204,9 @@
             const modal = document.getElementById('modal');
             modal.style.display = 'none';
         }
+
+        // Populate fields on page load
+        document.addEventListener('DOMContentLoaded', populateFields);
     </script>
 </body>
 </html>
