@@ -122,9 +122,18 @@
                 inputs: `Can you write a professional feedback for Karan based on the following details? ${context}`
             };
 
-            const output = query(data);
-            const outputBox = document.getElementById('output');
-            outputBox.innerHTML = `<strong>Generated Feedback:</strong> <br> ${output?.inputs || "Unable to generate feedback."}`;
+            try {
+                const output = await query(data);
+                const outputBox = document.getElementById('output');
+                if (output && output.generated_text) {
+                    outputBox.innerHTML = `<strong>Generated Feedback:</strong> <br> ${output.generated_text}`;
+                } else {
+                    outputBox.innerHTML = "Unable to generate feedback.";
+                }
+            } catch (error) {
+                console.error("Error generating feedback:", error);
+                document.getElementById('output').innerHTML = "An error occurred while generating feedback.";
+            }
         }
 
         function copyToClipboard() {
@@ -137,18 +146,16 @@
             });
         }
 
-        function query(payload) {
+        async function query(payload) {
             const API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large";
             const headers = { "Authorization": "Bearer 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" };
 
-            return fetch(API_URL, {
+            const response = await fetch(API_URL, {
                 method: "POST",
                 headers: headers,
                 body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => data)
-            .catch(error => console.error("Error:", error));
+            });
+            return response.json();
         }
     </script>
 </body>
